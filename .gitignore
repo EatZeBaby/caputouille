@@ -1,0 +1,5 @@
+.certs/
+.venv/
+__pycache__/
+*.pyc
+recipe_8_sample.html
