@@ -40,12 +40,23 @@
     </div>
   </header>
 
+  <!-- Section nav -->
+  <nav class="section-nav" id="sectionNav" aria-label="Sections">
+    <div class="section-nav-inner">
+      <button class="section-tab active" data-section="recipes" type="button">Recettes</button>
+      <button class="section-tab" data-section="menus" type="button">Menus</button>
+      <button class="section-tab" data-section="blog" type="button">Blog</button>
+      <button class="section-tab" data-section="method" type="button">Méthode</button>
+      <button class="section-tab" data-section="tire" type="button">Tire-allaitement</button>
+    </div>
+  </nav>
+
   <!-- Hero / Search -->
   <section class="hero" id="hero">
     <div class="hero-inner">
-      <h1 class="hero-title">Les recettes de bébé</h1>
-      <p class="hero-subtitle">275 recettes pour accompagner la diversification alimentaire</p>
-      <div class="search-wrapper">
+      <h1 class="hero-title" id="heroTitle">Les recettes de bébé</h1>
+      <p class="hero-subtitle" id="heroSubtitle">275 recettes pour accompagner la diversification alimentaire</p>
+      <div class="search-wrapper" id="searchWrapper">
         <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
           type="search"
@@ -53,7 +64,7 @@
           class="search-input"
           placeholder="Chercher une recette, un ingrédient..."
           autocomplete="off"
-          aria-label="Rechercher une recette"
+          aria-label="Rechercher"
         >
         <button class="search-clear" id="searchClear" type="button" aria-label="Effacer la recherche" hidden>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -62,16 +73,14 @@
     </div>
   </section>
 
-  <!-- Filters -->
+  <!-- Recipe filters (only for recipes view) -->
   <section class="filters-section" id="filters">
     <div class="filters-inner">
-      <!-- Category chips -->
       <div class="filter-row">
         <div class="filter-chips" id="categoryChips" role="listbox" aria-label="Catégories">
           <button class="chip active" data-category="all" role="option" aria-selected="true">Toutes</button>
         </div>
       </div>
-      <!-- Dietary filters -->
       <details class="dietary-filters" id="dietaryFilters">
         <summary class="dietary-toggle">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
@@ -83,27 +92,63 @@
     </div>
   </section>
 
+  <!-- Blog filter chips (only for blog view) -->
+  <section class="filters-section" id="blogFilters" hidden>
+    <div class="filters-inner">
+      <div class="filter-row">
+        <div class="filter-chips" id="blogCategoryChips" role="listbox" aria-label="Catégories blog">
+          <button class="chip active" data-blog-category="all" role="option" aria-selected="true">Tous</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Results count -->
-  <div class="results-bar">
+  <div class="results-bar" id="resultsBar">
     <div class="results-inner">
       <span id="resultsCount" class="results-count"></span>
     </div>
   </div>
 
-  <!-- Recipe Grid -->
+  <!-- Main content area — only one section visible at a time -->
   <main class="main">
-    <div class="recipe-grid" id="recipeGrid"></div>
-    <div class="no-results" id="noResults" hidden>
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-      <p>Aucune recette trouvée</p>
-      <button class="btn-reset" id="resetFilters" type="button">Réinitialiser les filtres</button>
+    <!-- Recipes -->
+    <div class="section-view" id="view-recipes">
+      <div class="recipe-grid" id="recipeGrid"></div>
+      <div class="no-results" id="noResults" hidden>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        <p>Aucune recette trouvée</p>
+        <button class="btn-reset" id="resetFilters" type="button">Réinitialiser les filtres</button>
+      </div>
+    </div>
+
+    <!-- Menus -->
+    <div class="section-view" id="view-menus" hidden>
+      <div class="menu-grid" id="menuGrid"></div>
+    </div>
+
+    <!-- Blog -->
+    <div class="section-view" id="view-blog" hidden>
+      <div class="recipe-grid" id="blogGrid"></div>
+    </div>
+
+    <!-- Méthode de diversification -->
+    <div class="section-view doc-view" id="view-method" hidden>
+      <aside class="doc-toc" id="methodToc"></aside>
+      <article class="doc-body" id="methodBody"></article>
+    </div>
+
+    <!-- Tire-allaitement -->
+    <div class="section-view doc-view" id="view-tire" hidden>
+      <aside class="doc-toc" id="tireToc"></aside>
+      <article class="doc-body" id="tireBody"></article>
     </div>
   </main>
 
-  <!-- Recipe Detail Overlay -->
+  <!-- Detail Overlay (recipes / blog / menus) -->
   <div class="overlay" id="overlay" hidden>
     <div class="overlay-backdrop" id="overlayBackdrop"></div>
-    <article class="recipe-detail" id="recipeDetail" role="dialog" aria-modal="true" aria-label="Détail recette">
+    <article class="recipe-detail" id="recipeDetail" role="dialog" aria-modal="true" aria-label="Détail">
       <button class="detail-close" id="detailClose" type="button" aria-label="Fermer">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>

@@ -25,7 +25,7 @@ RECIPES_FILE = DATA_DIR / "recipes.json"
 PROGRESS_FILE = DATA_DIR / "progress.json"
 LISTING_CACHE = DATA_DIR / "recipe_index.json"
 
-COOKIE = {"PHPSESSID": "13j45hfk2pdesd5gvh730aapar"}
+COOKIE = {"PHPSESSID": "dq60s92bsqpna0gdh0121f9v48"}
 
 CATEGORIES = {
     "1": "Petits déjeuners et goûters",
