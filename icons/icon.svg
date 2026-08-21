@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="108" fill="#3d8b5e"/>
+  <g transform="translate(256,240)" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Cupcake top -->
+    <path d="M-80 0 C-80-60 -50-100 0-100 C50-100 80-60 80 0" fill="#fff" fill-opacity="0.25"/>
+    <!-- Cupcake wrapper -->
+    <path d="M-80 0 L-60 90 L60 90 L80 0" fill="#fff" fill-opacity="0.15"/>
+    <!-- Wrapper lines -->
+    <line x1="-70" y1="30" x2="70" y2="30"/>
+    <line x1="-65" y1="60" x2="65" y2="60"/>
+    <!-- Leaf on top -->
+    <path d="M0-100 C10-140 40-140 30-110" stroke-width="14" fill="#fff" fill-opacity="0.3"/>
+  </g>
+  <text x="256" y="420" text-anchor="middle" font-family="Georgia,serif" font-size="72" font-weight="bold" fill="#fff" opacity="0.95">datatouille</text>
+</svg>
