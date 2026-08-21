@@ -1507,3 +1507,28 @@ a {
   }
 }
 
+
+/* ── Batch cooking + two-level document sections (bambin) ───── */
+.batch-month-title {
+  font-family: var(--f-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--c-primary-dark);
+  margin: var(--space-xl) 0 var(--space-lg);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--c-primary-light);
+}
+.batch-month-title:first-child { margin-top: 0; }
+
+/* Expert-viewpoint group headers (level 1) vs sub-sections (level 2) */
+.doc-toc-l2 a { padding-left: 22px; font-size: 0.8rem; }
+.doc-toc-l1 a {
+  font-weight: 700;
+  color: var(--c-primary-dark);
+  margin-top: var(--space-sm);
+}
+.doc-section-l1 .doc-section-title {
+  font-size: 1.9rem;
+  color: var(--c-primary);
+  border-bottom-width: 3px;
+}

@@ -17,6 +17,9 @@ DATA_FILES = {
     'MENUS': 'menus.json',
     'METHOD': 'diversification.json',
     'TIRE': 'tire_allaitement.json',
+    'BATCH': 'batch_cooking.json',
+    'ASSIETTE': 'dans_assiette.json',
+    'QCNMP': 'quand_ca_ne_marche_pas.json',
 }
 
 # Read components
@@ -27,10 +30,10 @@ with open(os.path.join(APP, 'style.css')) as f:
 with open(os.path.join(APP, 'app.js')) as f:
     js = f.read()
 
-# Read all data files (prefer the freshly scraped ones in data/, fall back to app/)
+# Read all data files (prefer the merged/served copies in app/, fall back to data/)
 data_blobs = {}
 for var, fname in DATA_FILES.items():
-    candidates = [os.path.join(DATA, fname), os.path.join(APP, fname)]
+    candidates = [os.path.join(APP, fname), os.path.join(DATA, fname)]
     path = next((p for p in candidates if os.path.exists(p)), None)
     if not path:
         raise SystemExit(f"Missing data file: {fname}")
@@ -41,14 +44,17 @@ for var, fname in DATA_FILES.items():
 # Find the loadAll function and substitute the fetch block
 js_patched = js.replace(
     """async function loadAll() {
-  const [recipes, blog, menus, method, tire] = await Promise.all([
+  const [recipes, blog, menus, method, tire, batch, assiette, qcnmp] = await Promise.all([
     loadJson('recipes.json'),
     loadJson('blog.json'),
     loadJson('menus.json'),
     loadJson('diversification.json'),
     loadJson('tire_allaitement.json'),
+    loadJson('batch_cooking.json'),
+    loadJson('dans_assiette.json'),
+    loadJson('quand_ca_ne_marche_pas.json'),
   ]);
-  return { recipes, blog, menus, method, tire };
+  return { recipes, blog, menus, method, tire, batch, assiette, qcnmp };
 }""",
     """async function loadAll() {
   return {
@@ -57,6 +63,9 @@ js_patched = js.replace(
     menus: window.__MENUS__,
     method: window.__METHOD__,
     tire: window.__TIRE__,
+    batch: window.__BATCH__,
+    assiette: window.__ASSIETTE__,
+    qcnmp: window.__QCNMP__,
   };
 }"""
 )
