@@ -45,8 +45,11 @@
     <div class="section-nav-inner">
       <button class="section-tab active" data-section="recipes" type="button">Recettes</button>
       <button class="section-tab" data-section="menus" type="button">Menus</button>
+      <button class="section-tab" data-section="batch" type="button">Batch cooking</button>
       <button class="section-tab" data-section="blog" type="button">Blog</button>
-      <button class="section-tab" data-section="method" type="button">Méthode</button>
+      <button class="section-tab" data-section="assiette" type="button">Dans l'assiette</button>
+      <button class="section-tab" data-section="qcnmp" type="button">Quand ça coince</button>
+      <button class="section-tab" data-section="method" type="button">Méthode Diversification</button>
       <button class="section-tab" data-section="tire" type="button">Tire-allaitement</button>
     </div>
   </nav>
@@ -130,6 +133,23 @@
     <!-- Blog -->
     <div class="section-view" id="view-blog" hidden>
       <div class="recipe-grid" id="blogGrid"></div>
+    </div>
+
+    <!-- Batch cooking -->
+    <div class="section-view" id="view-batch" hidden>
+      <div id="batchGroups"></div>
+    </div>
+
+    <!-- Dans l'assiette -->
+    <div class="section-view doc-view" id="view-assiette" hidden>
+      <aside class="doc-toc" id="assietteToc"></aside>
+      <article class="doc-body" id="assietteBody"></article>
+    </div>
+
+    <!-- Quand ça coince -->
+    <div class="section-view doc-view" id="view-qcnmp" hidden>
+      <aside class="doc-toc" id="qcnmpToc"></aside>
+      <article class="doc-body" id="qcnmpBody"></article>
     </div>
 
     <!-- Méthode de diversification -->

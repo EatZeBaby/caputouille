@@ -8,12 +8,15 @@ const BASE_IMG = 'https://www.hamstouille.fr';
 let allRecipes = [];
 let allBlog = [];
 let allMenus = [];
+let allBatch = [];
 let methodDoc = null;
 let tireDoc = null;
+let assietteDoc = null;
+let qcnmpDoc = null;
 let recipeById = new Map();
 
 /* View state */
-let activeSection = 'recipes';      // 'recipes' | 'menus' | 'blog' | 'method' | 'tire'
+let activeSection = 'recipes';      // recipes | menus | batch | blog | assiette | qcnmp | method | tire
 let activeCategory = 'all';
 let activeBlogCategory = 'all';
 let activeDietaryFilters = new Set();
@@ -32,6 +35,27 @@ const SECTIONS = {
   menus: {
     title: 'Menus de la semaine',
     subtitle: 'Idées de repas équilibrés jour par jour',
+    showSearch: false,
+    showFilters: false,
+    showBlogFilters: false,
+  },
+  batch: {
+    title: 'Batch cooking',
+    subtitle: 'Sessions de cuisine par lot, mois par mois',
+    showSearch: false,
+    showFilters: false,
+    showBlogFilters: false,
+  },
+  assiette: {
+    title: "Dans l'assiette",
+    subtitle: 'Que mettre dans l’assiette de 1 à 6 ans',
+    showSearch: false,
+    showFilters: false,
+    showBlogFilters: false,
+  },
+  qcnmp: {
+    title: 'Quand ça coince',
+    subtitle: 'Difficultés alimentaires : les conseils des experts',
     showSearch: false,
     showFilters: false,
     showBlogFilters: false,
@@ -69,14 +93,17 @@ async function loadJson(path) {
 }
 
 async function loadAll() {
-  const [recipes, blog, menus, method, tire] = await Promise.all([
+  const [recipes, blog, menus, method, tire, batch, assiette, qcnmp] = await Promise.all([
     loadJson('recipes.json'),
     loadJson('blog.json'),
     loadJson('menus.json'),
     loadJson('diversification.json'),
     loadJson('tire_allaitement.json'),
+    loadJson('batch_cooking.json'),
+    loadJson('dans_assiette.json'),
+    loadJson('quand_ca_ne_marche_pas.json'),
   ]);
-  return { recipes, blog, menus, method, tire };
+  return { recipes, blog, menus, method, tire, batch, assiette, qcnmp };
 }
 
 // ── Recipe rendering (existing logic, lightly refactored) ─────
@@ -361,6 +388,61 @@ function renderMenus() {
     `${allMenus.length} menu${allMenus.length !== 1 ? 's' : ''}`;
 }
 
+// ── Batch cooking rendering ───────────────────────────
+
+function createBatchCard(batch, index) {
+  const imgUrl = imageUrl(batch);
+  const card = document.createElement('article');
+  card.className = 'recipe-card';
+  card.style.animationDelay = `${Math.min(index * 30, 300)}ms`;
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('role', 'link');
+  card.setAttribute('aria-label', batch.title);
+
+  card.innerHTML = `
+    <div class="card-image-wrapper">
+      ${imgUrl
+        ? `<img class="card-image" src="${escapeHtml(imgUrl)}" alt="${escapeHtml(batch.title)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-image-placeholder>🍲</div>'">`
+        : `<div class="card-image-placeholder">🍲</div>`
+      }
+    </div>
+    <div class="card-body">
+      <div class="card-category">${escapeHtml(batch.month || 'Batch cooking')}</div>
+      <h2 class="card-title">${escapeHtml(batch.title)}</h2>
+    </div>
+  `;
+  card.addEventListener('click', () => openBatch(batch.id));
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBatch(batch.id); }
+  });
+  return card;
+}
+
+function renderBatch() {
+  const container = document.getElementById('batchGroups');
+  container.innerHTML = '';
+  // Group by month, preserving first-seen order
+  const groups = new Map();
+  for (const b of allBatch) {
+    const key = b.month || 'Autres';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(b);
+  }
+  let idx = 0;
+  for (const [month, items] of groups) {
+    const heading = document.createElement('h2');
+    heading.className = 'batch-month-title';
+    heading.textContent = month;
+    container.appendChild(heading);
+    const grid = document.createElement('div');
+    grid.className = 'recipe-grid';
+    items.forEach(b => grid.appendChild(createBatchCard(b, idx++)));
+    container.appendChild(grid);
+  }
+  document.getElementById('resultsCount').textContent =
+    `${allBatch.length} session${allBatch.length !== 1 ? 's' : ''} de batch cooking`;
+}
+
 // ── Document views (méthode + tire-allaitement) ──────
 
 function renderDocument(doc, tocEl, bodyEl) {
@@ -369,7 +451,7 @@ function renderDocument(doc, tocEl, bodyEl) {
     <h3 class="doc-toc-title">Sommaire</h3>
     <nav><ul class="doc-toc-list">
       ${doc.sections.map((s, i) => `
-        <li><a href="#sec-${i}">${escapeHtml(s.heading)}</a></li>
+        <li class="doc-toc-l${s.level || 2}"><a href="#sec-${i}">${escapeHtml(s.heading)}</a></li>
       `).join('')}
     </ul></nav>
   `;
@@ -382,7 +464,7 @@ function renderDocument(doc, tocEl, bodyEl) {
   for (let i = 0; i < doc.sections.length; i++) {
     const s = doc.sections[i];
     html += `
-      <section class="doc-section" id="sec-${i}">
+      <section class="doc-section doc-section-l${s.level || 2}" id="sec-${i}">
         <h2 class="doc-section-title">${escapeHtml(s.heading)}</h2>
         ${s.content_html || ''}
         ${(s.videos || []).map(v => `
@@ -429,6 +511,22 @@ function openMenu(id) {
   const menu = allMenus.find(m => m.id === (typeof id === 'string' ? parseInt(id, 10) : id));
   if (!menu) return;
   openOverlay(buildMenuDetailHtml(menu), `menu/${menu.id}`);
+}
+
+function openBatch(id) {
+  const batch = allBatch.find(b => b.id === (typeof id === 'string' ? parseInt(id, 10) : id));
+  if (!batch) return;
+  openOverlay(buildBatchDetailHtml(batch), `batch/${batch.id}`);
+}
+
+function buildBatchDetailHtml(batch) {
+  return `
+    <div class="detail-body" style="padding-top: var(--space-2xl);">
+      <div class="detail-category">${escapeHtml(batch.month || 'Batch cooking')}</div>
+      <h1 class="detail-title">${escapeHtml(batch.title)}</h1>
+      <div class="article-body">${batch.content_html || ''}</div>
+    </div>
+  `;
 }
 
 function buildRecipeDetailHtml(recipe) {
@@ -533,7 +631,8 @@ function closeOverlay() {
   document.body.style.overflow = '';
   if (location.hash.startsWith('#recipe/') ||
       location.hash.startsWith('#blog/') ||
-      location.hash.startsWith('#menu/')) {
+      location.hash.startsWith('#menu/') ||
+      location.hash.startsWith('#batch/')) {
     history.pushState(null, '', location.pathname + location.search);
   }
 }
@@ -559,7 +658,8 @@ function switchSection(name) {
   if (cfg.searchPlaceholder) {
     document.getElementById('searchInput').placeholder = cfg.searchPlaceholder;
   }
-  document.getElementById('resultsBar').hidden = (name === 'method' || name === 'tire');
+  document.getElementById('resultsBar').hidden =
+    (name === 'method' || name === 'tire' || name === 'assiette' || name === 'qcnmp');
 
   // Reset search across sections (each section has its own filter state)
   searchQuery = '';
@@ -574,13 +674,17 @@ function switchSection(name) {
   if (name === 'recipes') renderRecipes();
   else if (name === 'blog') renderBlog();
   else if (name === 'menus') renderMenus();
+  else if (name === 'batch') renderBatch();
+  else if (name === 'assiette') renderDocument(assietteDoc, document.getElementById('assietteToc'), document.getElementById('assietteBody'));
+  else if (name === 'qcnmp') renderDocument(qcnmpDoc, document.getElementById('qcnmpToc'), document.getElementById('qcnmpBody'));
   else if (name === 'method') renderDocument(methodDoc, document.getElementById('methodToc'), document.getElementById('methodBody'));
   else if (name === 'tire') renderDocument(tireDoc, document.getElementById('tireToc'), document.getElementById('tireBody'));
 
   // Update hash to reflect section (unless an item overlay is open)
   if (!location.hash.startsWith('#recipe/') &&
       !location.hash.startsWith('#blog/') &&
-      !location.hash.startsWith('#menu/')) {
+      !location.hash.startsWith('#menu/') &&
+      !location.hash.startsWith('#batch/')) {
     const target = name === 'recipes' ? '' : `#section/${name}`;
     history.replaceState(null, '', location.pathname + location.search + target);
   }
@@ -641,6 +745,9 @@ function handleHash() {
   } else if (hash.startsWith('#menu/')) {
     const id = parseInt(hash.split('/')[1], 10);
     if (allMenus.find(m => m.id === id)) { openMenu(id); return; }
+  } else if (hash.startsWith('#batch/')) {
+    const id = parseInt(hash.split('/')[1], 10);
+    if (allBatch.find(b => b.id === id)) { openBatch(id); return; }
   } else if (hash.startsWith('#section/')) {
     const sec = hash.split('/')[1];
     if (SECTIONS[sec]) { switchSection(sec); return; }
@@ -737,15 +844,21 @@ async function init() {
     allRecipes = data.recipes;
     allBlog = data.blog;
     allMenus = data.menus;
+    allBatch = data.batch;
     methodDoc = data.method;
     tireDoc = data.tire;
+    assietteDoc = data.assiette;
+    qcnmpDoc = data.qcnmp;
     recipeById = new Map(allRecipes.map(r => [r.id, r]));
 
     // Update subtitles with real counts
     SECTIONS.recipes.subtitle = `${allRecipes.length} recettes pour accompagner la diversification alimentaire`;
     SECTIONS.blog.subtitle = `${allBlog.length} articles sur la diversification, le quotidien et la nutrition`;
     SECTIONS.menus.subtitle = `${allMenus.length} semaines de menus équilibrés`;
+    SECTIONS.batch.subtitle = `${allBatch.length} sessions de batch cooking, mois par mois`;
     SECTIONS.tire.subtitle = `${tireDoc?.sections?.length || 15} chapitres vidéo pour gérer le tire-allaitement`;
+    SECTIONS.assiette.subtitle = `${assietteDoc?.sections?.length || 0} vidéos pour composer l’assiette de 1 à 6 ans`;
+    SECTIONS.qcnmp.subtitle = `${qcnmpDoc?.sections?.length || 0} vidéos d’experts pour les blocages alimentaires`;
 
     renderCategoryChips(getCategories(allRecipes));
     renderDietaryFilters(getDietaryFilters(allRecipes));
