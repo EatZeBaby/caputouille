@@ -1,12 +1,12 @@
-name: Deploy to GitHub Pages
+name: Deploy preview (bambin)
 
-# Publishes the app/ folder to the gh-pages branch (site root).
-# Pages must be configured to "Deploy from a branch: gh-pages / (root)".
-# keep_files preserves any branch previews under preview/*.
+# Publishes this branch's app/ folder to gh-pages under preview/bambin/,
+# giving a live URL at <pages-root>/preview/bambin/ alongside the main site.
+# keep_files preserves the root (main) site.
 
 on:
   push:
-    branches: [main]
+    branches: [bambin-1-6-ans]
   workflow_dispatch:
 
 permissions:
@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  deploy-preview:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,4 +25,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./app
+          destination_dir: preview/bambin
           keep_files: true
